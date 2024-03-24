@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"github.com/ez-as/ironlink-base-lib/env"
+	"github.com/ez-as/ironlink-base-lib/pkg/env"
 	"go.uber.org/zap"
 )
 
