@@ -1,0 +1,21 @@
+version: '3'
+
+tasks:
+  install:
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go mod download
+
+  generate:
+    cmds:
+      - go generate ./...
+
+  lint:
+    deps: [ generate ]
+    cmds:
+      - golangci-lint run
+
+  test:
+    deps: [ generate ]
+    cmds:
+      - go test ./...

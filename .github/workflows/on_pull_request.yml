@@ -1,0 +1,10 @@
+name: Verify PR
+
+on:
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  test-and-build:
+    uses: ./.github/workflows/_test.yml
