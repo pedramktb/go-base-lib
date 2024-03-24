@@ -6,5 +6,5 @@ on:
       - main
 
 jobs:
-  test-and-build:
+  test:
     uses: ./.github/workflows/_test.yml
