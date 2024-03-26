@@ -43,7 +43,8 @@ type ED25519Verifier struct {
 func NewED25519Verifier(masterPublicKey string) *ED25519Verifier {
 	masterPubKey, _ := base64.StdEncoding.DecodeString(masterPublicKey)
 	if len(masterPubKey) != ed25519.PublicKeySize {
-		logging.Logger().Fatal("invalid master public key")
+		logging.Logger().Error("invalid master public key")
+		return nil
 	}
 
 	return &ED25519Verifier{
@@ -66,7 +67,8 @@ type ED25519Signer struct {
 func NewED25519Signer(masterPrivateKey string) *ED25519Signer {
 	masterSeed, _ := base64.StdEncoding.DecodeString(masterPrivateKey)
 	if len(masterSeed) != ed25519.SeedSize {
-		logging.Logger().Fatal("invalid master private key")
+		logging.Logger().Error("invalid master private key")
+		return nil
 	}
 
 	return &ED25519Signer{

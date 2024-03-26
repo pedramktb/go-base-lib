@@ -17,7 +17,8 @@ type MongoDBClient struct {
 func NewClient(ctx context.Context, atlasURI, dbName string) *MongoDBClient {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(atlasURI))
 	if err != nil {
-		logging.Logger().Fatal("error connecting to mongodb", zap.Error(err))
+		logging.Logger().Error("error connecting to mongodb", zap.Error(err))
+		return nil
 	}
 
 	return &MongoDBClient{
