@@ -25,7 +25,7 @@ func randomString(n int) string {
 	return sb.String()
 }
 
-func Cert() (tls.Certificate, error) {
+func NewCert() (tls.Certificate, error) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return tls.Certificate{}, err
