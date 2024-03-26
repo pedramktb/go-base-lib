@@ -3,9 +3,8 @@ package auth
 import (
 	"crypto/ed25519"
 	"encoding/base64"
+	"fmt"
 	"time"
-
-	"github.com/ez-as/ironlink-base-lib/pkg/logging"
 )
 
 const SignatureTimeout = 1 * time.Minute
@@ -40,16 +39,15 @@ type ED25519Verifier struct {
 	masterPublicKey ed25519.PublicKey
 }
 
-func NewED25519Verifier(masterPublicKey string) *ED25519Verifier {
+func NewED25519Verifier(masterPublicKey string) (ED25519Verifier, error) {
 	masterPubKey, _ := base64.StdEncoding.DecodeString(masterPublicKey)
 	if len(masterPubKey) != ed25519.PublicKeySize {
-		logging.Logger().Error("invalid master public key")
-		return nil
+		return ED25519Verifier{}, fmt.Errorf("invalid master public key size")
 	}
 
-	return &ED25519Verifier{
+	return ED25519Verifier{
 		masterPublicKey: masterPubKey,
-	}
+	}, nil
 }
 
 func (v *ED25519Verifier) Verify(message, signature string) bool {
@@ -64,16 +62,15 @@ type ED25519Signer struct {
 	masterPrivateKey ed25519.PrivateKey
 }
 
-func NewED25519Signer(masterPrivateKey string) *ED25519Signer {
+func NewED25519Signer(masterPrivateKey string) (ED25519Signer, error) {
 	masterSeed, _ := base64.StdEncoding.DecodeString(masterPrivateKey)
 	if len(masterSeed) != ed25519.SeedSize {
-		logging.Logger().Error("invalid master private key")
-		return nil
+		return ED25519Signer{}, fmt.Errorf("invalid master private key size")
 	}
 
-	return &ED25519Signer{
+	return ED25519Signer{
 		masterPrivateKey: ed25519.NewKeyFromSeed(masterSeed),
-	}
+	}, nil
 }
 
 func (s *ED25519Signer) Sign(message string) string {

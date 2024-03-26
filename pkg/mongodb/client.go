@@ -2,11 +2,10 @@ package mongoDB
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/ez-as/ironlink-base-lib/pkg/logging"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.uber.org/zap"
 )
 
 type MongoDBClient struct {
@@ -14,15 +13,14 @@ type MongoDBClient struct {
 	DBName string
 }
 
-func NewClient(ctx context.Context, atlasURI, dbName string) *MongoDBClient {
+func NewClient(ctx context.Context, atlasURI, dbName string) (*MongoDBClient, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(atlasURI))
 	if err != nil {
-		logging.Logger().Error("error connecting to mongodb", zap.Error(err))
-		return nil
+		return nil, fmt.Errorf("error connecting to mongodb: %w", err)
 	}
 
 	return &MongoDBClient{
 		Client: client,
 		DBName: dbName,
-	}
+	}, nil
 }
