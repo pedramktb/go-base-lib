@@ -39,13 +39,13 @@ type ED25519Verifier struct {
 	masterPublicKey ed25519.PublicKey
 }
 
-func NewED25519Verifier(masterPublicKey string) (ED25519Verifier, error) {
+func NewED25519Verifier(masterPublicKey string) (*ED25519Verifier, error) {
 	masterPubKey, _ := base64.StdEncoding.DecodeString(masterPublicKey)
 	if len(masterPubKey) != ed25519.PublicKeySize {
-		return ED25519Verifier{}, fmt.Errorf("invalid master public key size")
+		return nil, fmt.Errorf("invalid master public key size")
 	}
 
-	return ED25519Verifier{
+	return &ED25519Verifier{
 		masterPublicKey: masterPubKey,
 	}, nil
 }
