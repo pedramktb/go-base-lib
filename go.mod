@@ -1,4 +1,4 @@
-module github.com/ez-as/ironlink-base-lib
+module github.com/ez-as/go-base-lib
 
 go 1.22.1
 
