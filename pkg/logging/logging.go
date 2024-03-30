@@ -5,16 +5,16 @@ import (
 	"go.uber.org/zap"
 )
 
+var logger *zap.Logger
+
 func init() {
-	var logger *zap.Logger
-	if env.IsProd() {
-		logger = zap.Must(zap.NewProduction())
-	} else {
+	if env.IsDebug() {
 		logger = zap.Must(zap.NewDevelopment())
+	} else {
+		logger = zap.Must(zap.NewProduction())
 	}
-	zap.ReplaceGlobals(logger)
 }
 
 func Logger() *zap.Logger {
-	return zap.L()
+	return logger
 }
