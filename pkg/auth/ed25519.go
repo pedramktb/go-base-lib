@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 const SignatureTimeout = 1 * time.Minute
@@ -60,17 +62,30 @@ func (v *ED25519Verifier) Verify(message, signature string) bool {
 
 type ED25519Signer struct {
 	masterPrivateKey ed25519.PrivateKey
+	sshSigner        ssh.Signer
 }
 
-func NewED25519Signer(masterPrivateKey string) (ED25519Signer, error) {
+func NewED25519Signer(masterPrivateKey string) (*ED25519Signer, error) {
 	masterSeed, _ := base64.StdEncoding.DecodeString(masterPrivateKey)
 	if len(masterSeed) != ed25519.SeedSize {
-		return ED25519Signer{}, fmt.Errorf("invalid master private key size")
+		return nil, fmt.Errorf("invalid master private key size")
 	}
 
-	return ED25519Signer{
-		masterPrivateKey: ed25519.NewKeyFromSeed(masterSeed),
+	key := ed25519.NewKeyFromSeed(masterSeed)
+
+	sshSigner, err := ssh.NewSignerFromSigner(key)
+	if err != nil {
+		return nil, fmt.Errorf("error creating ssh signer: %v", err)
+	}
+
+	return &ED25519Signer{
+		masterPrivateKey: key,
+		sshSigner:        sshSigner,
 	}, nil
+}
+
+func (s *ED25519Signer) PublicKey() string {
+	return base64.StdEncoding.EncodeToString(s.masterPrivateKey.Public().(ed25519.PublicKey))
 }
 
 func (s *ED25519Signer) Sign(message string) string {
@@ -83,4 +98,8 @@ func (s *ED25519Signer) Verify(message, signature string) bool {
 		return false
 	}
 	return ed25519.Verify(s.masterPrivateKey.Public().(ed25519.PublicKey), []byte(message), signatureBytes)
+}
+
+func (s *ED25519Signer) SSHSigner() ssh.Signer {
+	return s.sshSigner
 }
