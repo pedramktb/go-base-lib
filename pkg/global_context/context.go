@@ -1,4 +1,4 @@
-package ctx
+package globalContext
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func init() {
 	ctx, cancel = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 }
 
-func Ctx() context.Context {
+func Context() context.Context {
 	return ctx
 }
 
