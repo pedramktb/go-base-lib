@@ -26,7 +26,7 @@ func Cancel() {
 	wg.Wait()
 }
 
-func DoneListener() (Done func()) {
+func RegisterListener() (ListenerDone func()) {
 	wg.Add(1)
 	return wg.Done
 }
