@@ -3,12 +3,14 @@ package ctx
 import (
 	"context"
 	"os/signal"
+	"sync"
 	"syscall"
 )
 
 var (
 	ctx    context.Context
 	cancel context.CancelFunc
+	wg     sync.WaitGroup
 )
 
 func init() {
@@ -21,4 +23,10 @@ func Ctx() context.Context {
 
 func Cancel() {
 	cancel()
+	wg.Wait()
+}
+
+func DoneListener() (Done func()) {
+	wg.Add(1)
+	return wg.Done
 }
