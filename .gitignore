@@ -1,0 +1,2 @@
+*.env
+*_local_test.go

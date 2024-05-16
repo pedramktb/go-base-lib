@@ -1,0 +1,25 @@
+name: Test
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.1"
+
+      - name: Install Taskfile
+        run: go install github.com/go-task/task/v3/cmd/task@latest
+
+      - name: Install dependencies
+        run: task install
+
+      - name: Lint
+        run: task lint
+
+      - name: Test
+        run: task test
