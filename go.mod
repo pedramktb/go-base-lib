@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/sftp v1.13.6
-	go.mongodb.org/mongo-driver v1.14.0
+	go.mongodb.org/mongo-driver v1.15.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.21.0
 )
