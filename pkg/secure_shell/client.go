@@ -1,6 +1,7 @@
 package secureShell
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -17,12 +18,17 @@ type SecureShell struct {
 
 func New(ip, username string, signer ssh.Signer, password string, additionalSSHKeys ...string) (*SecureShell, error) {
 	var config *ssh.ClientConfig
-	if signer != nil && password != "" {
-		addKeyToServer(ip, username, signer, password, additionalSSHKeys...)
+	if signer != nil {
+		if password != "" {
+			err := addKeyToServer(ip, username, signer, password, additionalSSHKeys...)
+			if err != nil {
+				return nil, err
+			}
+		}
 		config = &ssh.ClientConfig{
 			User:            username,
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 	} else {
 		config = &ssh.ClientConfig{
@@ -49,7 +55,7 @@ func New(ip, username string, signer ssh.Signer, password string, additionalSSHK
 	}, nil
 }
 
-func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string, additionalSSHKeys ...string) {
+func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string, additionalSSHKeys ...string) error {
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
@@ -60,13 +66,13 @@ func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string,
 
 	sshClient, err := ssh.Dial("tcp", ip+":22", config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer sshClient.Close()
 
 	sess, err := sshClient.NewSession()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer sess.Close()
 
@@ -80,8 +86,10 @@ func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string,
 		echo "` + keys + `" >> ~/.ssh/authorized_keys;`,
 	)
 	if err != nil {
-		panic(fmt.Errorf("%w: %s", err, string(out)))
+		return fmt.Errorf("%w: %s", err, string(out))
 	}
+
+	return nil
 }
 
 func (s *SecureShell) IP() (string, error) {
@@ -126,23 +134,10 @@ func (s *SecureShell) Upload(localPath, remotePath string) error {
 }
 
 func (s *SecureShell) Close() error {
-	var allErrors string
-
-	err := s.sftpClient.Close()
-	if err != nil {
-		allErrors += err.Error() + "\n"
-	}
-
-	err = s.sshClient.Close()
-	if err != nil {
-		allErrors += err.Error() + "\n"
-	}
-
-	if allErrors != "" {
-		return fmt.Errorf(allErrors)
-	}
-
-	return nil
+	return errors.Join(
+		s.sshClient.Close(),
+		s.sftpClient.Close(),
+	)
 }
 
 func (s *SecureShell) Username() string {
