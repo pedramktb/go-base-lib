@@ -1,6 +1,7 @@
 package secureShell
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -133,23 +134,10 @@ func (s *SecureShell) Upload(localPath, remotePath string) error {
 }
 
 func (s *SecureShell) Close() error {
-	var allErrors string
-
-	err := s.sftpClient.Close()
-	if err != nil {
-		allErrors += err.Error() + "\n"
-	}
-
-	err = s.sshClient.Close()
-	if err != nil {
-		allErrors += err.Error() + "\n"
-	}
-
-	if allErrors != "" {
-		return fmt.Errorf(allErrors)
-	}
-
-	return nil
+	return errors.Join(
+		s.sshClient.Close(),
+		s.sftpClient.Close(),
+	)
 }
 
 func (s *SecureShell) Username() string {

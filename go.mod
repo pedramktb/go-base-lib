@@ -1,6 +1,6 @@
 module github.com/pedramktb/go-base-lib
 
-go 1.22.3
+go 1.23.2
 
 require (
 	github.com/joho/godotenv v1.5.1
