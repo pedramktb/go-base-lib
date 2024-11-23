@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_GetEnvOrFail(t *testing.T) {
+func Test_GetOrFail(t *testing.T) {
 	tests := []struct {
 		name     string
 		key      string
@@ -134,39 +134,39 @@ func Test_GetEnvOrFail(t *testing.T) {
 			var got any
 			switch tt.expected.(type) {
 			case string:
-				got = GetEnvOrFail[string](tt.key)
+				got = GetOrFail[string](tt.key)
 			case bool:
-				got = GetEnvOrFail[bool](tt.key)
+				got = GetOrFail[bool](tt.key)
 			case uintptr:
-				got = GetEnvOrFail[uintptr](tt.key)
+				got = GetOrFail[uintptr](tt.key)
 			case int:
-				got = GetEnvOrFail[int](tt.key)
+				got = GetOrFail[int](tt.key)
 			case int64:
-				got = GetEnvOrFail[int64](tt.key)
+				got = GetOrFail[int64](tt.key)
 			case int32:
-				got = GetEnvOrFail[int32](tt.key)
+				got = GetOrFail[int32](tt.key)
 			case int16:
-				got = GetEnvOrFail[int16](tt.key)
+				got = GetOrFail[int16](tt.key)
 			case int8:
-				got = GetEnvOrFail[int8](tt.key)
+				got = GetOrFail[int8](tt.key)
 			case uint:
-				got = GetEnvOrFail[uint](tt.key)
+				got = GetOrFail[uint](tt.key)
 			case uint64:
-				got = GetEnvOrFail[uint64](tt.key)
+				got = GetOrFail[uint64](tt.key)
 			case uint32:
-				got = GetEnvOrFail[uint32](tt.key)
+				got = GetOrFail[uint32](tt.key)
 			case uint16:
-				got = GetEnvOrFail[uint16](tt.key)
+				got = GetOrFail[uint16](tt.key)
 			case uint8:
-				got = GetEnvOrFail[uint8](tt.key)
+				got = GetOrFail[uint8](tt.key)
 			case float64:
-				got = GetEnvOrFail[float64](tt.key)
+				got = GetOrFail[float64](tt.key)
 			case float32:
-				got = GetEnvOrFail[float32](tt.key)
+				got = GetOrFail[float32](tt.key)
 			case complex128:
-				got = GetEnvOrFail[complex128](tt.key)
+				got = GetOrFail[complex128](tt.key)
 			case complex64:
-				got = GetEnvOrFail[complex64](tt.key)
+				got = GetOrFail[complex64](tt.key)
 			default:
 				t.Fatalf("unsupported type: %T", tt.expected)
 			}
