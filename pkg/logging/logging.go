@@ -26,8 +26,8 @@ type ContextKey string
 
 var contextKeys = []ContextKey{}
 
-func AddContextKey(key ContextKey) {
-	contextKeys = append(contextKeys, key)
+func AddContextKeys(keys []ContextKey) {
+	contextKeys = append(contextKeys, keys...)
 }
 
 func FromContext(ctx context.Context) *zap.Logger {
