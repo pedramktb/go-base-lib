@@ -11,10 +11,12 @@ func init() {
 	_ = godotenv.Load(".env")
 }
 
+// IsDebug returns true if the DEBUG environment variable is set to true
 func IsDebug() bool {
 	return GetWithFallback("DEBUG", false)
 }
 
+// GetOrFail returns the value of the environment variable or panics if it is not set
 func GetOrFail[
 	T string |
 		bool |
@@ -136,6 +138,7 @@ func GetOrFail[
 	return val.(T)
 }
 
+// GetWithFallback returns the value of the environment variable or the fallback value if it is not set
 func GetWithFallback[
 	T string |
 		bool |

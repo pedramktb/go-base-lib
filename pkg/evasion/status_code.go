@@ -18,4 +18,5 @@ var statusCodes = []int{
 	http.StatusServiceUnavailable,
 }
 
+// FailStatusCode is a random failed status code initialized at the start of the program (401-404, 500-503)
 var FailStatusCode = statusCodes[rand.New(rand.NewSource(time.Now().UnixNano())).Intn(len(statusCodes))]
