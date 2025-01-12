@@ -10,12 +10,16 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// SecureShell is a struct that contains an SSH client and an SFTP client for a remote server and the username of the authenticating user.
 type SecureShell struct {
 	sshClient  *ssh.Client
 	sftpClient *sftp.Client
 	username   string
 }
 
+// New creates a new SecureShell with the given IP, username, signer and or password, and optionally additional SSH keys
+// If only a signer or a password is provided, the provided method is used to authenticate.
+// If both a signer and a password are provided, the password is used to authenticate and the signer's public key along with any additional SSH keys are added to the server.
 func New(ip, username string, signer ssh.Signer, password string, additionalSSHKeys ...string) (*SecureShell, error) {
 	var config *ssh.ClientConfig
 	if signer != nil {
@@ -55,6 +59,7 @@ func New(ip, username string, signer ssh.Signer, password string, additionalSSHK
 	}, nil
 }
 
+// addKeyToServer adds the signer's public key and any additional SSH keys to the server at the given IP using the provided username and password.
 func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string, additionalSSHKeys ...string) error {
 	config := &ssh.ClientConfig{
 		User: username,
@@ -92,11 +97,13 @@ func addKeyToServer(ip, username string, signer ssh.Signer, tempPassword string,
 	return nil
 }
 
+// IP returns the IP of the remote server.
 func (s *SecureShell) IP() (string, error) {
 	ip, _, err := net.SplitHostPort(s.sshClient.Conn.RemoteAddr().String())
 	return ip, err
 }
 
+// Run runs the given command on the remote server. Run adds "sudo" to the command if the authenticating user is not root.
 func (s *SecureShell) Run(cmd string) error {
 	sess, err := s.newSession()
 	if err != nil {
@@ -112,6 +119,7 @@ func (s *SecureShell) Run(cmd string) error {
 	return nil
 }
 
+// Upload uploads the file at the local path to the remote path on the server.
 func (s *SecureShell) Upload(localPath, remotePath string) error {
 	src, err := os.Open(localPath)
 	if err != nil {
@@ -133,6 +141,7 @@ func (s *SecureShell) Upload(localPath, remotePath string) error {
 	return nil
 }
 
+// Close closes the SSH and SFTP clients.
 func (s *SecureShell) Close() error {
 	return errors.Join(
 		s.sshClient.Close(),
@@ -140,6 +149,7 @@ func (s *SecureShell) Close() error {
 	)
 }
 
+// Username returns the username of the authenticating user.
 func (s *SecureShell) Username() string {
 	return s.username
 }
