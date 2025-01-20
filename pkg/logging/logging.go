@@ -22,11 +22,9 @@ func Logger() *zap.Logger {
 	return logger
 }
 
-type ContextKey string
+var contextKeys = []string{}
 
-var contextKeys = []ContextKey{}
-
-func AddContextKeys(keys []ContextKey) {
+func AddContextKeys(keys []string) {
 	contextKeys = append(contextKeys, keys...)
 }
 
@@ -37,7 +35,7 @@ func FromContext(ctx context.Context) *zap.Logger {
 	return Logger().With(ctxToZapFields(ctx, contextKeys)...)
 }
 
-func ctxToZapFields(ctx context.Context, keys []ContextKey) []zap.Field {
+func ctxToZapFields(ctx context.Context, keys []string) []zap.Field {
 	var fields []zap.Field
 	for _, key := range keys {
 		if value := ctx.Value(key); value != nil {
