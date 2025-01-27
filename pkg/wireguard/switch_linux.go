@@ -1,0 +1,112 @@
+//go:build linux
+
+package wireguard
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os/exec"
+	"time"
+
+	"github.com/pedramktb/go-base-lib/pkg/logging"
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+)
+
+const StopTimeout = 5 * time.Second
+
+func (m *Manager) start(ctx context.Context) error {
+	_ = m.stop(ctx)
+
+	go func() {
+		<-ctx.Done()
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StopTimeout)
+		defer cancel()
+		err := m.stop(ctx)
+		if err != nil {
+			logging.FromContext(ctx).Error("error stopping wireguard", zap.Error(err))
+		}
+	}()
+
+	logging.FromContext(ctx).Info("starting wireguard")
+
+	wgClient, err := wgctrl.New()
+	if err != nil {
+		return fmt.Errorf("failed to create wireguard client: %w", err)
+	}
+	defer wgClient.Close()
+
+	err = exec.CommandContext(ctx, "ip", "link", "add", m.interfaceName, "type", "wireguard").Run()
+	if err != nil {
+		return fmt.Errorf("failed to create wireguard interface: %w", err)
+	}
+
+	listenPort := int(m.listenPort)
+
+	err = wgClient.ConfigureDevice(m.interfaceName, wgtypes.Config{
+		PrivateKey:   &m.privateKey,
+		ListenPort:   &listenPort,
+		ReplacePeers: true,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to configure wireguard device: %w", err)
+	}
+
+	err = exec.CommandContext(ctx, "ip", "-4", "address", "add", m.netV4.String(), "dev", m.interfaceName).Run()
+	if err != nil {
+		return fmt.Errorf("failed to add ipv4 address to wireguard interface: %w", err)
+	}
+	err = exec.CommandContext(ctx, "ip", "-6", "address", "add", m.netV6.String(), "dev", m.interfaceName).Run()
+	if err != nil {
+		return fmt.Errorf("failed to add ipv6 address to wireguard interface: %w", err)
+	}
+
+	err = exec.CommandContext(ctx, "ip", "link", "set", "mtu", fmt.Sprint(m.mtu), "up", "dev", m.interfaceName).Run()
+	if err != nil {
+		return fmt.Errorf("failed to set mtu and start for wireguard interface: %w", err)
+	}
+
+	err = m.addRouting()
+	if err != nil {
+		return fmt.Errorf("failed to add iptables rules: %w", err)
+	}
+
+	return nil
+}
+
+func (m *Manager) stop(ctx context.Context) error {
+	logging.FromContext(ctx).Info("stopping wireguard")
+
+	var errs []error
+
+	err := m.removeRouting()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("failed to remove iptables rules: %w", err))
+	}
+
+	err = exec.CommandContext(ctx, "ip", "link", "delete", m.interfaceName).Run()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("failed to delete wireguard interface: %w", err))
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
+}
+
+func (m *Manager) Restart(ctx context.Context) error {
+	err := exec.CommandContext(ctx, "ip", "link", "set", "down", m.interfaceName).Run()
+	if err != nil {
+		return fmt.Errorf("failed to stop wireguard interface: %w", err)
+	}
+
+	err = exec.CommandContext(ctx, "ip", "link", "set", "up", m.interfaceName).Run()
+	if err != nil {
+		return fmt.Errorf("failed to start wireguard interface: %w", err)
+	}
+
+	return nil
+}
