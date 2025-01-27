@@ -35,7 +35,7 @@ func (m *Manager) addRouting() error {
 		return fmt.Errorf("failed to add masquerade rule for ipv6: %w", err)
 	}
 
-	err = ip6t.Insert("nat", "PREROUTING", 1, "-d", m.addrV6.String(), "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", fmt.Sprintf("[%s]", m.dnsV6.String()))
+	err = ip6t.Insert("nat", "PREROUTING", 1, "-d", m.addrV6.String(), "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", m.dnsV6.String())
 	if err != nil {
 		return fmt.Errorf("failed to add dns rule for ipv6: %w", err)
 	}
@@ -74,7 +74,7 @@ func (m *Manager) removeRouting() error {
 			errs = append(errs, fmt.Errorf("failed to delete masquerade rule for ipv6: %w", err))
 		}
 
-		err = ip6t.DeleteIfExists("nat", "PREROUTING", "-d", m.addrV4.String(), "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", fmt.Sprintf("[%s]", m.dnsV6.String()))
+		err = ip6t.DeleteIfExists("nat", "PREROUTING", "-d", m.addrV4.String(), "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", m.dnsV6.String())
 		if err != nil {
 			errs = append(errs, fmt.Errorf("failed to delete dns rule for ipv6: %w", err))
 		}
