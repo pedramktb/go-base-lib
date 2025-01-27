@@ -14,9 +14,9 @@ type Manager struct {
 	privateKey     wgtypes.Key
 	listenPort     uint16
 	mtu            uint16
-	netV4, netV6   net.IPNet
+	netV4, netV6   *net.IPNet
 	addrV4, addrV6 net.IP
-	dnsV4, dnsV6   net.UDPAddr
+	dnsV4, dnsV6   *net.UDPAddr
 }
 
 func NewManager(
@@ -25,14 +25,25 @@ func NewManager(
 	privateKey string,
 	listenPort uint16,
 	mtu uint16,
-	netV4, netV6 net.IPNet,
+	netV4, netV6 *net.IPNet,
 	addrV4, addrV6 net.IP,
-	dnsV4, dnsV6 net.UDPAddr,
+	dnsV4, dnsV6 *net.UDPAddr,
 ) (*Manager, error) {
 	key, err := wgtypes.ParseKey(privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
+
+	switch {
+	case netV4 != nil && addrV4 != nil && dnsV4 != nil && netV6 != nil && addrV6 != nil && dnsV6 != nil:
+	case netV4 != nil && addrV4 != nil && dnsV4 != nil && netV6 == nil && addrV6 == nil && dnsV6 == nil:
+	case netV4 == nil && addrV4 == nil && dnsV4 == nil && netV6 != nil && addrV6 != nil && dnsV6 != nil:
+	case netV4 == nil && addrV4 == nil && dnsV4 == nil && netV6 == nil && addrV6 == nil && dnsV6 == nil:
+		return nil, fmt.Errorf("ipv4 and/or ipv6 configuration is missing")
+	default:
+		return nil, fmt.Errorf("ipv4 and/or ipv6 configuration is incomplete")
+	}
+
 	wgManager := &Manager{
 		interfaceName: interfaceName,
 		privateKey:    key,
