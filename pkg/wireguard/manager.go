@@ -27,7 +27,7 @@ func NewManager(
 	mtu uint16,
 	netV4, netV6 net.IPNet,
 	addrV4, addrV6 net.IP,
-	dnsV4, dnsV6 net.IP,
+	dnsV4, dnsV6 net.UDPAddr,
 ) (*Manager, error) {
 	key, err := wgtypes.ParseKey(privateKey)
 	if err != nil {
@@ -37,6 +37,13 @@ func NewManager(
 		interfaceName: interfaceName,
 		privateKey:    key,
 		listenPort:    listenPort,
+		mtu:           mtu,
+		netV4:         netV4,
+		netV6:         netV6,
+		addrV4:        addrV4,
+		addrV6:        addrV6,
+		dnsV4:         dnsV4,
+		dnsV6:         dnsV6,
 	}
 
 	err = wgManager.start(ctx)
