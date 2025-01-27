@@ -16,7 +16,7 @@ type Manager struct {
 	mtu            uint16
 	netV4, netV6   net.IPNet
 	addrV4, addrV6 net.IP
-	dnsV4, dnsV6   net.IP
+	dnsV4, dnsV6   net.UDPAddr
 }
 
 func NewManager(
