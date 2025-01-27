@@ -54,13 +54,18 @@ func (m *Manager) start(ctx context.Context) error {
 		return fmt.Errorf("failed to configure wireguard device: %w", err)
 	}
 
-	err = exec.CommandContext(ctx, "ip", "-4", "address", "add", m.netV4.String(), "dev", m.interfaceName).Run()
-	if err != nil {
-		return fmt.Errorf("failed to add ipv4 address to wireguard interface: %w", err)
+	if m.netV4 != nil {
+		err = exec.CommandContext(ctx, "ip", "-4", "address", "add", m.netV4.String(), "dev", m.interfaceName).Run()
+		if err != nil {
+			return fmt.Errorf("failed to add ipv4 address to wireguard interface: %w", err)
+		}
 	}
-	err = exec.CommandContext(ctx, "ip", "-6", "address", "add", m.netV6.String(), "dev", m.interfaceName).Run()
-	if err != nil {
-		return fmt.Errorf("failed to add ipv6 address to wireguard interface: %w", err)
+
+	if m.netV6 != nil {
+		err = exec.CommandContext(ctx, "ip", "-6", "address", "add", netV6String(*m.netV6), "dev", m.interfaceName).Run()
+		if err != nil {
+			return fmt.Errorf("failed to add ipv6 address to wireguard interface: %w", err)
+		}
 	}
 
 	err = exec.CommandContext(ctx, "ip", "link", "set", "mtu", fmt.Sprint(m.mtu), "up", "dev", m.interfaceName).Run()
