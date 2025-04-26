@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pedramktb/go-base-lib/pkg/logging"
-	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -24,13 +22,8 @@ func (m *Manager) start(ctx context.Context) error {
 		<-ctx.Done()
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StopTimeout)
 		defer cancel()
-		err := m.stop(ctx)
-		if err != nil {
-			logging.FromContext(ctx).Error("error stopping wireguard", zap.Error(err))
-		}
+		_ = m.stop(ctx)
 	}()
-
-	logging.FromContext(ctx).Info("starting wireguard")
 
 	wgClient, err := wgctrl.New()
 	if err != nil {
@@ -82,8 +75,6 @@ func (m *Manager) start(ctx context.Context) error {
 }
 
 func (m *Manager) stop(ctx context.Context) error {
-	logging.FromContext(ctx).Info("stopping wireguard")
-
 	var errs []error
 
 	err := m.removeRouting()

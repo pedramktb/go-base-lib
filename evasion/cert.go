@@ -19,7 +19,7 @@ const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 func randomString(n int) string {
 	sb := strings.Builder{}
 	sb.Grow(n)
-	for i := 0; i < n; i++ {
+	for range n {
 		sb.WriteByte(charset[unsafeRand.Intn(len(charset))])
 	}
 	return sb.String()
