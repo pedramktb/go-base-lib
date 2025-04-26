@@ -11,6 +11,7 @@ func Test_GetOrFail(t *testing.T) {
 		key      string
 		value    string
 		expected any
+		wantErr  bool
 	}{
 		{
 			name:     "rune",
@@ -132,46 +133,52 @@ func Test_GetOrFail(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv(tt.key, tt.value)
 			var got any
+			var err error
 			switch tt.expected.(type) {
 			case string:
-				got = GetOrFail[string](tt.key)
+				got, err = GetOrFail[string](tt.key)
 			case bool:
-				got = GetOrFail[bool](tt.key)
+				got, err = GetOrFail[bool](tt.key)
 			case uintptr:
-				got = GetOrFail[uintptr](tt.key)
+				got, err = GetOrFail[uintptr](tt.key)
 			case int:
-				got = GetOrFail[int](tt.key)
+				got, err = GetOrFail[int](tt.key)
 			case int64:
-				got = GetOrFail[int64](tt.key)
+				got, err = GetOrFail[int64](tt.key)
 			case int32:
-				got = GetOrFail[int32](tt.key)
+				got, err = GetOrFail[int32](tt.key)
 			case int16:
-				got = GetOrFail[int16](tt.key)
+				got, err = GetOrFail[int16](tt.key)
 			case int8:
-				got = GetOrFail[int8](tt.key)
+				got, err = GetOrFail[int8](tt.key)
 			case uint:
-				got = GetOrFail[uint](tt.key)
+				got, err = GetOrFail[uint](tt.key)
 			case uint64:
-				got = GetOrFail[uint64](tt.key)
+				got, err = GetOrFail[uint64](tt.key)
 			case uint32:
-				got = GetOrFail[uint32](tt.key)
+				got, err = GetOrFail[uint32](tt.key)
 			case uint16:
-				got = GetOrFail[uint16](tt.key)
+				got, err = GetOrFail[uint16](tt.key)
 			case uint8:
-				got = GetOrFail[uint8](tt.key)
+				got, err = GetOrFail[uint8](tt.key)
 			case float64:
-				got = GetOrFail[float64](tt.key)
+				got, err = GetOrFail[float64](tt.key)
 			case float32:
-				got = GetOrFail[float32](tt.key)
+				got, err = GetOrFail[float32](tt.key)
 			case complex128:
-				got = GetOrFail[complex128](tt.key)
+				got, err = GetOrFail[complex128](tt.key)
 			case complex64:
-				got = GetOrFail[complex64](tt.key)
+				got, err = GetOrFail[complex64](tt.key)
 			default:
 				t.Fatalf("unsupported type: %T", tt.expected)
 			}
 			if got != tt.expected {
 				t.Errorf("got %v, expected %v", got, tt.expected)
+			}
+			if err != nil && !tt.wantErr {
+				t.Errorf("unexpected error: %v", err)
+			} else if err == nil && tt.wantErr {
+				t.Errorf("expected error but got none")
 			}
 		})
 	}
