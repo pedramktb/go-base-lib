@@ -7,35 +7,35 @@ import (
 )
 
 var (
-	// RootTaggedErrors (mapping to HTTP status codes)
-	ErrNotFound = &TaggedError{
+	// RootErrors (mapping to HTTP status codes)
+	ErrNotFound = &Error{
 		err:  errors.New("not found"),
 		tag:  "NOT_FOUND",
 		code: http.StatusNotFound,
 	}
-	ErrBadRequest = &TaggedError{
+	ErrBadRequest = &Error{
 		err:  errors.New("bad request"),
 		tag:  "BAD_REQUEST",
 		code: http.StatusBadRequest,
 	}
-	ErrUnauthorized = &TaggedError{
+	ErrUnauthorized = &Error{
 		err:  errors.New("unauthorized"),
 		tag:  "UNAUTHORIZED",
 		code: http.StatusUnauthorized,
 	}
-	ErrForbidden = &TaggedError{
+	ErrForbidden = &Error{
 		err:  errors.New("forbidden"),
 		tag:  "FORBIDDEN",
 		code: http.StatusForbidden,
 	}
-	ErrInternal = &TaggedError{
+	ErrInternal = &Error{
 		err:  errors.New("internal server error"),
 		tag:  "INTERNAL_SERVER_ERROR",
 		code: http.StatusInternalServerError,
 	}
 )
 
-// A TaggedError is an error implementation that in a nester wrapping provides the tag of the most inner child and the code of the root TaggedError.
+// A Error is an error implementation that in a nested wrapping provides the tag of the most inner child and the code of the root Error.
 // The tag is useful when returning a business related error in an api.
 // Example wrapping:
 //
@@ -72,53 +72,58 @@ var (
 //	Error(): "internal server error: unhandled database error: unsupported data type time.Time ..."
 //	Tag(): "UNHANDLED_DB_ERROR"
 //	Code(): 500
-type TaggedError struct {
+type Error struct {
 	err  error
 	tag  string
 	code int
 }
 
 // NewRoot supports adding errors with status codes not available in this package (e.g. 409)
-func NewRoot(err error, tag string, code int) *TaggedError {
-	return &TaggedError{
+func NewRoot(err error, tag string, code int) *Error {
+	return &Error{
 		err:  err,
 		tag:  tag,
 		code: code,
 	}
 }
 
-// New is meant to either wrapped directly inside a RootTaggedError or indirectly through another TaggedError
-func New(err error, tag string) *TaggedError {
-	return &TaggedError{
+// New is meant to either wrapped directly inside a RootError or indirectly through another Error
+func New(err error, tag string) *Error {
+	return &Error{
 		err: err,
 		tag: tag,
 	}
 }
 
+// Returns the underlying error
+func (e *Error) Err() error {
+	return e.err
+}
+
 // Returns the underlying error's Error()
-func (e *TaggedError) Error() string {
+func (e *Error) Error() string {
 	return e.err.Error()
 }
 
-func (e *TaggedError) Tag() string {
+func (e *Error) Tag() string {
 	return e.tag
 }
 
-// Status Code of the error. Is zero if the root error is not a RootTaggedError
-func (e *TaggedError) Code() int {
+// Status Code of the error. Is zero if the root error is not a RootError
+func (e *Error) Code() int {
 	return e.code
 }
 
-// Wrap an error with this TaggedError, if the given error is a TaggedError, its tag will be used.
-func (e *TaggedError) Wrap(err error) *TaggedError {
-	if err, ok := err.(*TaggedError); ok {
-		return &TaggedError{
+// Wrap an error with this Error, if the given error is a Error, its tag will be used.
+func (e *Error) Wrap(err error) *Error {
+	if err, ok := err.(*Error); ok {
+		return &Error{
 			err:  fmt.Errorf("%w: %w", e.err, err.err),
 			tag:  err.tag,
 			code: e.code,
 		}
 	}
-	return &TaggedError{
+	return &Error{
 		err:  fmt.Errorf("%w: %w", e.err, err),
 		tag:  e.tag,
 		code: e.code,
@@ -126,20 +131,20 @@ func (e *TaggedError) Wrap(err error) *TaggedError {
 }
 
 // Returns true if the errors.Is() on the underlying error returns true.
-// If the given error is a TaggedError, its underlying error will be used.
-func (e *TaggedError) Is(target error) bool {
+// If the given error is a Error, its underlying error will be used.
+func (e *Error) Is(target error) bool {
 	if target == nil {
 		return e == nil
 	}
-	if target, ok := target.(*TaggedError); ok {
+	if target, ok := target.(*Error); ok {
 		return errors.Is(e.err, target.err)
 	}
 	return errors.Is(e.err, target)
 }
 
-// For taggederrors Runs err.Is() and returns errors.Is() otherwise.
+// For Errors Runs err.Is() and returns errors.Is() otherwise.
 func Is(err error, target error) bool {
-	if err, ok := err.(*TaggedError); ok {
+	if err, ok := err.(*Error); ok {
 		return err.Is(target)
 	}
 	return errors.Is(err, target)
