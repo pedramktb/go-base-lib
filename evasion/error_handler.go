@@ -16,10 +16,10 @@ var evasiveError = taggederror.NewRoot(
 )
 
 func ErrorHandler(err error, trusted bool, w http.ResponseWriter, r *http.Request) {
-	if trusted {
+	if trusted || env.GetEnvironment() != env.EnvironmentProd {
 		trustedHandler(err, w, r)
 	} else {
-		untrustedHandler(err, w, r)
+		w.WriteHeader(FailStatusCode)
 	}
 }
 
@@ -30,13 +30,4 @@ func trustedHandler(err error, w http.ResponseWriter, r *http.Request) {
 		taggedErr = taggederror.ErrInternal.Wrap(err)
 	}
 	taggederror.Handler(evasiveError.Wrap(taggedErr), w, r)
-}
-
-// untrustedHandler uses FailStatusCode with no detail
-func untrustedHandler(err error, w http.ResponseWriter, r *http.Request) {
-	if env.GetEnvironment() != env.EnvironmentProd {
-		taggederror.Handler(err, w, r)
-	} else {
-		w.WriteHeader(FailStatusCode)
-	}
 }
