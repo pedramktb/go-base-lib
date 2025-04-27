@@ -35,7 +35,7 @@ var (
 	}
 )
 
-// A Error is an error implementation that in a nester wrapping provides the tag of the most inner child and the code of the root Error.
+// A Error is an error implementation that in a nested wrapping provides the tag of the most inner child and the code of the root Error.
 // The tag is useful when returning a business related error in an api.
 // Example wrapping:
 //
