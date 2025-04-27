@@ -29,7 +29,7 @@ func trustedHandler(err error, w http.ResponseWriter, r *http.Request) {
 	if !errors.As(err, &taggedErr) {
 		taggedErr = taggederror.ErrInternal.Wrap(err)
 	}
-	taggederror.Handler(evasiveError.Wrap(err), w, r)
+	taggederror.Handler(evasiveError.Wrap(taggedErr), w, r)
 }
 
 // untrustedHandler uses FailStatusCode with no detail
