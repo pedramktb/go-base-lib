@@ -29,13 +29,13 @@ func trustedHandler(err error, w http.ResponseWriter, r *http.Request) {
 	if !errors.As(err, &taggedErr) {
 		taggedErr = taggederror.ErrInternal.Wrap(err)
 	}
-	taggederror.ErrorHandler(evasiveError.Wrap(err), w, r)
+	taggederror.Handler(evasiveError.Wrap(err), w, r)
 }
 
 // untrustedHandler uses FailStatusCode with no detail
 func untrustedHandler(err error, w http.ResponseWriter, r *http.Request) {
 	if env.GetEnvironment() != env.EnvironmentProd {
-		taggederror.ErrorHandler(err, w, r)
+		taggederror.Handler(err, w, r)
 	} else {
 		w.WriteHeader(FailStatusCode)
 	}

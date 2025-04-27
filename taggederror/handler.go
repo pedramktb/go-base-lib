@@ -7,8 +7,8 @@ import (
 	"github.com/go-faster/jx"
 )
 
-// ErrorHandler handles errors for http.Handler
-func ErrorHandler(err error, w http.ResponseWriter, r *http.Request) {
+// Handler handles errors for http.Handler
+func Handler(err error, w http.ResponseWriter, r *http.Request) {
 	var taggedErr *Error
 	if !errors.As(err, &taggedErr) {
 		taggedErr = ErrInternal.Wrap(err)
