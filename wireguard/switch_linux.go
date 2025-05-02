@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/pedramktb/go-base-lib/lifecycle"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -19,6 +20,10 @@ func (m *Manager) start(ctx context.Context) error {
 	_ = m.stop(ctx)
 
 	go func() {
+		done, err := lifecycle.RegisterCloser(ctx)
+		if err == nil {
+			defer done()
+		}
 		<-ctx.Done()
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StopTimeout)
 		defer cancel()
