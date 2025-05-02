@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -10,28 +10,30 @@ import (
 	slogctx "github.com/veqryn/slog-context"
 )
 
+// HTTPS starts the provided HTTP server that must be configured with TLS.
+// It uses an optional cancel function that is called when the server is no longer running.
 func HTTPS(ctx context.Context, cancel context.CancelFunc, server *http.Server) {
 	var svErr = make(chan error, 1)
 	go func() {
 		slogctx.FromCtx(ctx).Info("starting server", slog.String("addr", server.Addr))
 		svErr <- server.ListenAndServeTLS("", "")
-		cancel()
+		if cancel != nil {
+			cancel()
+		}
 	}()
 
 	go func() {
-		done, err := lifecycle.RegisterCloser(ctx)
-		if err == nil {
-			defer done()
+		if done, err := lifecycle.RegisterCloser(ctx); err == nil {
+			defer func() {
+				err := server.Shutdown(context.WithoutCancel(ctx))
+				if err != nil {
+					done(fmt.Errorf("failed to shutdown https server: %w", err))
+				} else {
+					done(<-svErr)
+				}
+			}()
 		}
 		<-ctx.Done()
-		if err := server.Shutdown(ctx); err != nil {
-			slogctx.FromCtx(ctx).Error("failed to shutdown server gracefully", slog.Any("error", err))
-		}
-		err = <-svErr
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slogctx.FromCtx(ctx).Error("server closed with an error", slog.Any("error", err))
-		} else {
-			slogctx.FromCtx(ctx).Info("server closed")
-		}
+		server.Shutdown(context.WithoutCancel(ctx))
 	}()
 }

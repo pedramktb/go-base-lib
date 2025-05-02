@@ -20,14 +20,12 @@ func (m *Manager) start(ctx context.Context) error {
 	_ = m.stop(ctx)
 
 	go func() {
-		done, err := lifecycle.RegisterCloser(ctx)
-		if err == nil {
-			defer done()
+		if done, err := lifecycle.RegisterCloser(ctx); err == nil {
+			defer done(m.stop(context.WithoutCancel(ctx)))
+		} else {
+			defer m.stop(context.WithoutCancel(ctx))
 		}
 		<-ctx.Done()
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StopTimeout)
-		defer cancel()
-		_ = m.stop(ctx)
 	}()
 
 	wgClient, err := wgctrl.New()
