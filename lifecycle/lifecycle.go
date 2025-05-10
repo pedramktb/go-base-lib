@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrNoLifeCycleInCtx = errors.New("no lifecycle in context")
+	ErrNoLifecycleInCtx = errors.New("no lifecycle in context")
 )
 
 type lifecycleCtxKey struct{}
@@ -30,10 +30,9 @@ type lifecycleData struct {
 func Context(shutdownTimeout time.Duration) (context.Context, context.CancelFunc, <-chan error) {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	lc := &lifecycleData{
-		wgs:  []*sync.WaitGroup{{}},
+		wgs:  []*sync.WaitGroup{},
 		errs: []error{nil},
 	}
-	lc.wgs[0].Add(1)
 	ctx = context.WithValue(ctx, lifecycleCtxKey{}, lc)
 	shutdownErrs := make(chan error)
 	go func() {
@@ -50,11 +49,11 @@ func Context(shutdownTimeout time.Duration) (context.Context, context.CancelFunc
 			<-force
 			os.Exit(1)
 		}()
-		lc.wgs[0].Done()
 		for i := range lc.wgs {
 			lc.wgs[i].Wait()
 			shutdownErrs <- lc.errs[i]
 		}
+		close(shutdownErrs)
 	}()
 	return ctx, cancel, shutdownErrs
 }
@@ -67,7 +66,7 @@ func Context(shutdownTimeout time.Duration) (context.Context, context.CancelFunc
 func RegisterCloser(ctx context.Context) (done func(err error), err error) {
 	lc, ok := ctx.Value(lifecycleCtxKey{}).(*lifecycleData)
 	if !ok {
-		return nil, ErrNoLifeCycleInCtx
+		return nil, ErrNoLifecycleInCtx
 	}
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
