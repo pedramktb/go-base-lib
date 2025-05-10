@@ -27,11 +27,22 @@ type lifecycleData struct {
 // cancelation. This means closing a running program immediately from shell, requires 2 interrupts.
 // The additional CancelFunc can be used the start the shutdown process from inside the program.
 // The additional Channel should be used to prevent main from exiting and receive the shutdown errors.
+// This channel is closed when all errors from all closed goroutines are received. See the example below:
+//
+//	for err := range shutdownErrsChan {
+//		if err != nil {
+//			errors = append(errors, err)
+//		}
+//	}
+//	if len(errors) > 0 {
+//		logger.Error("one or more modules failed to shutdown properly", errors)
+//	}
+//	// End of main()
 func Context(shutdownTimeout time.Duration) (context.Context, context.CancelFunc, <-chan error) {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	lc := &lifecycleData{
 		wgs:  []*sync.WaitGroup{},
-		errs: []error{nil},
+		errs: []error{},
 	}
 	ctx = context.WithValue(ctx, lifecycleCtxKey{}, lc)
 	shutdownErrs := make(chan error)

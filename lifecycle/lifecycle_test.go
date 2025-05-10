@@ -28,13 +28,11 @@ func Test_Lifecycle(t *testing.T) {
 		done2(nil)
 	}()
 	errors := []error{}
-	for {
-		select {
-		case err := <-shutdown:
+	for err := range shutdown {
+		if err != nil {
 			errors = append(errors, err)
-		default:
-			assert.Equal(t, 1, len(errors))
-			return
 		}
 	}
+	assert.Equal(t, 1, len(errors))
+
 }
