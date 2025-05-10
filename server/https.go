@@ -34,6 +34,6 @@ func HTTPS(ctx context.Context, cancel context.CancelFunc, server *http.Server) 
 			}()
 		}
 		<-ctx.Done()
-		server.Shutdown(context.WithoutCancel(ctx))
+		_ = server.Shutdown(context.WithoutCancel(ctx))
 	}()
 }
