@@ -6,7 +6,7 @@ require (
 	github.com/coreos/go-iptables v0.8.0
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jackc/pgx/v5 v5.7.5
 	github.com/pkg/sftp v1.13.9
 	github.com/stretchr/testify v1.10.0
 	github.com/veqryn/slog-context v0.8.0
