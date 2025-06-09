@@ -10,7 +10,7 @@ require (
 	github.com/pkg/sftp v1.13.9
 	github.com/stretchr/testify v1.10.0
 	github.com/veqryn/slog-context v0.8.0
-	go.mongodb.org/mongo-driver v1.17.3
+	go.mongodb.org/mongo-driver v1.17.4
 	golang.org/x/crypto v0.37.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
 )
